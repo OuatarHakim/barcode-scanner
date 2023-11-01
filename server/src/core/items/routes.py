@@ -1,8 +1,9 @@
+from http.client import HTTPException
 from typing import List
 
 from fastapi import APIRouter, Query
 
-from .controllers import add_item, delete_item, get_item, get_items
+from .controllers import add_item, delete_item, get_item, get_items ,update_item
 from .schemas import AddItemSchema, ItemSchema
 
 item_router = APIRouter(
@@ -24,7 +25,7 @@ def create_item(
 
 @item_router.get("/{item_id}", response_model=ItemSchema)
 def read_item(
-    item_id: int,
+    item_id: str,
 ):
     return get_item(item_id)
 
@@ -37,8 +38,16 @@ def read_items(
     return get_items(offset, limit)
 
 
-@item_router.delete("/", response_model=ItemSchema)
+@item_router.delete("/{item_id}", response_model=ItemSchema)
 def remove_item(
     item_id: int,
 ):
     return delete_item(item_id)
+
+@item_router.put("/{name}",response_model=ItemSchema)
+def update_item_by_name(
+    name : str,
+    action: str,
+):
+    return update_item(name,action)
+   
