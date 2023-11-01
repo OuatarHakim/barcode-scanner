@@ -4,17 +4,18 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  Button,
   TouchableOpacity,
 } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import Menu from "../components/Menu";
 
 export default function ScannerScreen({ route, navigation }: any) {
+  //adress de l'api
+  const LOCAL_API_ADDRESS = "http://192.168.53.2:8000";
+
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
-
-  let panier: { [key: string]: number } = {};
+  const [text, setText] = useState<undefined | string>(undefined);
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
@@ -33,29 +34,75 @@ export default function ScannerScreen({ route, navigation }: any) {
     data: string;
   }) => {
     setScanned(true);
-    await additem(data.replace("item_id=", ""));
+    await addProductToCart(data, 200, 1, "increment");
     alert(`Bar code with type ${type} and data ${data} has been scanned!`);
   };
-  const additem = async (itemId: string) => {
-    if (isNaN(parseInt(itemId))) {
-      alert("Article introuvable,essayez à nouveau");
-    }
-    let rep;
+  /**
+   *
+   * @param name  product name or code
+   * @param price  price
+   * @param quantite  quantity
+   * @param action increment or decrement if product exist and when you delete
+   */
+  const addProductToCart = async (
+    name: string,
+    price: number,
+    quantite: number,
+    action: string
+  ) => {
+    const produit = {
+      name: name,
+      price: price,
+      quantite: quantite,
+    };
+
     try {
-      rep = await fetch(`http://localhost:8000/items/${itemId}`, {
+      //Vérifier si l'élément existe // La base de données a été modifier pour recupérer des données a l'aide de name
+      const response = await fetch(`${LOCAL_API_ADDRESS}/items/${name}`, {
         method: "GET",
       });
-    } catch (e) {
-      return;
-    }
-    const res = await rep.json();
-    if (!res) {
-      alert("Article introuvale");
-      return;
-    } else {
-      const id = res.id;
+      console.log("Article à ajouter :", { name: name, action: "increment" });
+
+      if (response.ok) {
+        // L'élément existe, on incrémente la quantité
+        const putResponse = await fetch(
+          `${LOCAL_API_ADDRESS}/items/${name}?action=${action}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({ name: name, action: "increment" }),
+          }
+        );
+
+        if (putResponse.ok) {
+          alert("Quantité incrémentée avec succès !");
+        } else {
+          alert("Erreur lors de l'incrémentation de la quantité");
+        }
+      } else {
+        // Le produit  n'existe pas, on l'ajoute
+        const postResponse = await fetch(`${LOCAL_API_ADDRESS}/items`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(produit),
+        });
+
+        if (postResponse.ok) {
+          alert("Article ajouté avec succès !");
+        } else {
+          alert("Erreur lors de l'ajout de l'article");
+        }
+      }
+    } catch (error) {
+      alert("Erreur lors de la communication avec le serveur : " + error);
     }
   };
+
   if (hasPermission === null) {
     return <Text style={styles.text}>Requesting for camera permission</Text>;
   }
@@ -71,13 +118,20 @@ export default function ScannerScreen({ route, navigation }: any) {
           style={styles.scanner}
         />
       </View>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => additem(/* itemId ici */)}
-      >
-        <Text style={styles.buttonText}>Ajouter au panier</Text>
-      </TouchableOpacity>
+      <View>
+        <TextInput
+          style={styles.textInput}
+          placeholder="Entrer  le nom de produit"
+          onChangeText={(value) => setText(value)}
+          value={text}
+        />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => addProductToCart(text!, 200, 1, "increment")}
+        >
+          <Text style={styles.buttonText}>Ajouter au panier</Text>
+        </TouchableOpacity>
+      </View>
 
       {scanned && (
         <TouchableOpacity
@@ -87,7 +141,6 @@ export default function ScannerScreen({ route, navigation }: any) {
           <Text style={styles.scanAgainButtonText}>Scanner à nouveau</Text>
         </TouchableOpacity>
       )}
-
       <Menu />
     </View>
   );
@@ -100,17 +153,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   scannerContainer: {
-    width: 300,
-    height: 300,
     borderWidth: 2,
-    borderColor: "coral",
-    overflow: "hidden",
-    marginBottom: 20,
+    width: "100%",
+    height: "50%",
   },
   scanner: {
     flex: 1,
-    width: 300,
-    height: 300,
     borderWidth: 2,
     borderColor: "coral",
   },
@@ -122,7 +170,7 @@ const styles = StyleSheet.create({
     borderColor: "lightgrey",
   },
   button: {
-    backgroundColor: "#009f89",
+    backgroundColor: "#00dd00",
     padding: 15,
     borderRadius: 5,
     width: "70%",
@@ -133,7 +181,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   scanAgainButton: {
-    backgroundColor: "#009f89",
+    backgroundColor: "#00dd00",
     padding: 10,
     borderRadius: 5,
     width: "70%",
@@ -145,7 +193,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   viewCartButton: {
-    backgroundColor: "#009f89",
+    backgroundColor: "#00dd00",
     padding: 15,
     borderRadius: 5,
     width: "70%",
@@ -155,5 +203,24 @@ const styles = StyleSheet.create({
   viewCartButtonText: {
     color: "white",
     fontWeight: "bold",
+  },
+  text: {
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: "bold",
+    letterSpacing: 0.25,
+    color: "white",
+  },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+  },
+  menuContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    backgroundColor: "lightgray",
   },
 });
