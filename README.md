@@ -74,8 +74,9 @@ npx expo run:android  # npx expo run:ios
 
 ### Capteurs d'écrans :
 
-![Accueil ](./screenshot/home.jpg)
-![Scanner ](./screenshot/scanner.jpg)
-![Scanner ](./screenshot/scanner.jpg)
-![Panier ](./screenshot/cart.jpg)
-![Checkout ](./screenshot/checkout.jpg)
+<p align="center">
+<img src="./screenshot/home.jpg" width="200" />
+<img src="./screenshot/scanner.jpg" width="200" />
+<img src="./screenshot/cart.jpg" width="200" />
+<img src="./screenshot/checkout.jpg" width="200" />
+</p>
