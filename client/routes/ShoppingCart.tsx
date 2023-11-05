@@ -112,7 +112,7 @@ export default function ShoppingCart({ navigation }: any) {
                 }}
               />
             </View>
-            <Text style={styles.itemPrice}>{item.quantite * item.price}$</Text>
+            <Text style={styles.itemPrice}>{item.quantite * item.price} €</Text>
             <Button
               title="Retirer"
               onPress={() => {
@@ -124,7 +124,7 @@ export default function ShoppingCart({ navigation }: any) {
       </ScrollView>
       <View style={styles.totalContainer}>
         <Text style={styles.totalText}>
-          Total à payer: {calculateTotalPrice()}$
+          Total à payer: {calculateTotalPrice()} €
         </Text>
         <Button
           title="Payer"

@@ -104,12 +104,7 @@ export default function CheckoutScreen({ route }: any) {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Payment</Text>
-      <Button
-        disabled={!loading}
-        title="Checkout"
-        onPress={openPaymentSheet}
-        style={styles.button}
-      />
+      <Button disabled={!loading} title="Checkout" onPress={openPaymentSheet} />
       <FlatList
         data={items}
         renderItem={({ item }) => (
@@ -119,18 +114,17 @@ export default function CheckoutScreen({ route }: any) {
               Nombre d'unité: {item.quantite}
             </Text>
             <Text style={styles.itemCost}>
-              Prix: {(item.price / 100).toFixed(2)}$
+              Prix: {(item.price / 100).toFixed(2)} €
             </Text>
             <Text style={styles.itemTotal}>
-              Total
-              {((item.price * item.quantite) / 100).toFixed(2)}
+              Total : {((item.price * item.quantite) / 100).toFixed(2)} €
             </Text>
           </View>
         )}
       />
       <View style={styles.totalContainer}>
         <Text style={styles.totalText}>
-          Total: ${(amount / 100).toFixed(2)}$
+          Total: {(amount / 100).toFixed(2)} €
         </Text>
       </View>
     </SafeAreaView>
