@@ -84,5 +84,8 @@ npx expo run:android  # npx expo run:ios
 <img src="./screenshot/cart.jpg" width="200" />
 </p>
 <p>
-<img src="./screenshot/checkout.jpg" width="200" />
+<img src="./screenshot/hist.jpg" width="200" />
+</p>
+<p>
+<img src="./screenshot/paiment.jpg" width="200" />
 </p>

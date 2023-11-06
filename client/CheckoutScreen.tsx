@@ -1,15 +1,7 @@
 import { useStripe } from "@stripe/stripe-react-native";
 import Constants from "expo-constants";
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Text,
-  Button,
-  SafeAreaView,
-  View,
-  FlatList,
-  StyleSheet,
-} from "react-native";
+import { Alert, Text, Button, SafeAreaView, View } from "react-native";
 
 export default function CheckoutScreen({ route }: any) {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -17,21 +9,21 @@ export default function CheckoutScreen({ route }: any) {
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
 
   const apiUrl = Constants.expoConfig.extra.apiUrl;
-  const userId = "cus_OmpJZapHkM2keT";
 
+  const userId = "cus_OxOOGc4tKcFzGj";
   const items = route.params.items;
+  let itemsId: { id: number; amount: number }[] = [];
 
-  let amount = items.reduce((total: number, item: any) => {
-    return (total += item.price * item.quantite);
-  }, 0);
-
-  let itemsId: number[] = [];
-
-  items.forEach((item: { id: number; quantite: number }) => {
-    for (let i = 0; i < item.quantite; i++) {
-      itemsId.push(item.id);
-    }
+  items.forEach((item: { id: number; price: number }) => {
+    itemsId.push({ id: item.id, amount: item.price / 100 });
   });
+
+  /* const items = [
+    {
+      id: 1,
+      amount: 2,
+    },
+  ];*/
 
   const fetchPaymentSheetParams = async () => {
     const response = await fetch(`${apiUrl}/payments/`, {
@@ -40,7 +32,7 @@ export default function CheckoutScreen({ route }: any) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        pending_items: items,
+        pending_items: itemsId,
         customer_id: userId,
       }),
     });
@@ -102,74 +94,9 @@ export default function CheckoutScreen({ route }: any) {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Payment</Text>
+    <SafeAreaView>
+      <Text>Payment</Text>
       <Button disabled={!loading} title="Checkout" onPress={openPaymentSheet} />
-      <FlatList
-        data={items}
-        renderItem={({ item }) => (
-          <View style={styles.itemContainer} key={item.id}>
-            <Text style={styles.itemName}>Produit: {item.name}</Text>
-            <Text style={styles.itemQuantity}>
-              Nombre d'unité: {item.quantite}
-            </Text>
-            <Text style={styles.itemCost}>
-              Prix: {(item.price / 100).toFixed(2)} €
-            </Text>
-            <Text style={styles.itemTotal}>
-              Total : {((item.price * item.quantite) / 100).toFixed(2)} €
-            </Text>
-          </View>
-        )}
-      />
-      <View style={styles.totalContainer}>
-        <Text style={styles.totalText}>
-          Total: {(amount / 100).toFixed(2)} €
-        </Text>
-      </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#fff",
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-  itemContainer: {
-    marginVertical: 8,
-  },
-  itemName: {
-    fontSize: 18,
-  },
-  itemQuantity: {
-    fontSize: 16,
-    color: "#888",
-  },
-  itemCost: {
-    fontSize: 16,
-    color: "#333",
-  },
-  itemTotal: {
-    fontSize: 16,
-    color: "#444",
-  },
-  totalContainer: {
-    borderTopWidth: 1,
-    borderTopColor: "#ccc",
-    marginTop: 16,
-  },
-  totalText: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  button: {
-    marginTop: 16,
-  },
-});
